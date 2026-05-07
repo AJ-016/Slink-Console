@@ -3,26 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Retro Snake | Slink-Console</title>
+    <title>Slink-Console</title>
     <style>
         :root { 
             --retro-bg: #808080; 
             --retro-ink: #0d0e0a; 
             --console-body: #2a2a2a;
         }
+        * {
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
         body {
             background: #111;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
-            min-height: 100vh;
+            justify-content: center; /* Centering fix */
+            height: 100vh; /* Centering fix */
             margin: 0;
             font-family: 'Courier New', Courier, monospace;
             overflow: hidden;
             touch-action: none;
-            -webkit-user-select: none;
-            user-select: none;
         }
 
         .handheld {
@@ -33,6 +37,7 @@
             border: 4px solid #1a1a1a;
             position: relative;
             max-width: 95vw;
+            transition: background 0.3s ease;
         }
 
         .hud-area {
@@ -85,10 +90,11 @@
             grid-template-rows: repeat(3, 45px);
         }
 
-        .d-btn, .round-btn, .desktop-btns button {
-            -webkit-tap-highlight-color: transparent;
+        .d-btn, .round-btn, .desktop-btns button, .ui-btn {
             outline: none;
             cursor: pointer;
+            position: relative;
+            transition: transform 0.05s, box-shadow 0.05s;
         }
 
         .d-btn {
@@ -98,10 +104,13 @@
             align-items: center;
             justify-content: center;
             font-size: 18px;
-            box-shadow: 0 4px 0 #000;
-            transition: 0.1s;
+            box-shadow: 0 6px 0 #000;
         }
-        .d-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #000; color: #fff; }
+        .d-btn:active { 
+            transform: translateY(4px); 
+            box-shadow: 0 2px 0 #000; 
+            color: #fff; 
+        }
 
         .up { grid-column: 2; border-radius: 8px 8px 0 0; }
         .left { grid-column: 1; grid-row: 2; border-radius: 8px 0 0 8px; }
@@ -114,7 +123,7 @@
             background: #a00;
             border-radius: 50%;
             border: 3px solid #600;
-            box-shadow: 0 4px 0 #300;
+            box-shadow: 0 6px 0 #300;
             color: #fff;
             font-size: 8px;
             font-weight: bold;
@@ -124,8 +133,9 @@
             text-align: center;
             line-height: 1.1;
         }
-        .round-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #300; }
-        .round-btn.blue { background: #0066cc; border-color: #004488; box-shadow: 0 4px 0 #002244; }
+        .round-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #300; }
+        .round-btn.blue { background: #0066cc; border-color: #004488; box-shadow: 0 6px 0 #002244; }
+        .round-btn.blue:active { box-shadow: 0 2px 0 #002244; }
 
         @media (min-width: 769px) {
             .d-pad, .sys-btns { display: none; }
@@ -133,6 +143,14 @@
             .desktop-btns { display: flex !important; gap: 10px; }
         }
         .desktop-btns { display: none; }
+        .desktop-btns button {
+            background: #222; 
+            color: #fff; 
+            border: 1px solid #444; 
+            padding: 8px 15px; 
+            box-shadow: 0 4px 0 #000;
+        }
+        .desktop-btns button:active { transform: translateY(2px); box-shadow: 0 1px 0 #000; }
 
         #gameOverUI, #settingsUI, #pauseUI {
             position: absolute;
@@ -143,18 +161,59 @@
             border: 3px solid #000;
             display: none;
             z-index: 30;
-            width: 80%;
+            width: 85%;
             backdrop-filter: blur(5px);
         }
         #gameOverUI, #pauseUI { background: rgba(0, 0, 0, 0.9); color: #fff; }
-        #settingsUI { background: #222; color: var(--retro-bg); }
+        #settingsUI { background: #222; color: #fff; }
 
-        .preview-box { width: 45px; height: 45px; background: var(--retro-bg); border: 2px solid #000; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+        .setting-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            gap: 10px;
+        }
+        .setting-row label {
+            font-size: 10px;
+            text-align: left;
+            flex-grow: 1;
+            white-space: nowrap;
+        }
+        .setting-row input, .setting-row select {
+            flex-basis: 50%;
+            background: #111;
+            color: #fff;
+            border: 1px solid #444;
+            height: 25px;
+            padding: 2px;
+        }
+
+        .ui-btn {
+            background: #fff;
+            color: #000;
+            border: none;
+            padding: 10px;
+            width: 100%;
+            font-weight: bold;
+            box-shadow: 0 4px 0 #999;
+            margin-top: 5px;
+        }
+        .ui-btn:active {
+            transform: translateY(3px);
+            box-shadow: 0 1px 0 #999;
+        }
+        .ui-btn.resume { background: #eee; color: #000; box-shadow: 0 4px 0 #999; }
+        .ui-btn.resume:active { box-shadow: 0 1px 0 #999; }
+        .ui-btn.close { background: #444; color: #fff; box-shadow: 0 4px 0 #222; }
+        .ui-btn.close:active { box-shadow: 0 1px 0 #222; }
+
+        .preview-box { width: 45px; height: 45px; border: 2px solid #000; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
     </style>
 </head>
 <body>
 
-    <div class="handheld">
+    <div class="handheld" id="consoleShell">
         <div class="hud-area">
             <div>SCORE: <span id="score">0</span></div>
             <div>HI-SCORE: <span id="hiScore">0</span></div>
@@ -166,29 +225,41 @@
                 
                 <div id="gameOverUI">
                     <h3>GAME OVER</h3>
-                    <button onclick="init()" style="background:#fff; border:none; padding:10px; width: 100%;">RETRY</button>
+                    <button class="ui-btn" onclick="init()">RETRY</button>
                 </div>
 
                 <div id="pauseUI">
                     <h3>PAUSED</h3>
-                    <button onclick="handlePause()" style="background:#0f0; color:#000; border:none; padding:10px; width: 100%;">RESUME</button>
+                    <button class="ui-btn resume" onclick="handlePause()">RESUME</button>
                 </div>
 
                 <div id="settingsUI">
                     <h4>SETTINGS</h4>
-                    <div class="preview-box"><img id="previewImg" src="assets/head.png" style="width:30px; image-rendering:pixelated;"></div>
-                    <div style="font-size: 10px; margin-bottom: 5px;">BG COLOR</div>
-                    <input type="color" id="bgColorPicker" value="#808080" style="width:100%;">
-                    <div style="font-size: 10px; margin: 10px 0 5px;">SNAKE COLOR</div>
-                    <select id="snakeColorSelect" style="width:100%; background:#111; color:#fff; padding:5px;">
-                        <option value="charcoal">Charcoal</option>
-                        <option value="classic">Green</option>
-                        <option value="neonBlue">Blue</option>
-                        <option value="deepRed">Red</option>
-                        <option value="purple">Purple</option>
-                        <option value="gold">Gold</option>
-                    </select>
-                    <button onclick="toggleSettings()" style="margin-top: 15px; width:100%; background:#444; color:#fff; border:none; padding:8px;">CLOSE</button>
+                    <div class="preview-box" id="previewContainer"><img id="previewImg" src="assets/head.png" style="width:30px; image-rendering:pixelated;"></div>
+                    
+                    <div class="setting-row">
+                        <label>BG COLOR</label>
+                        <input type="color" id="bgColorPicker" value="#808080">
+                    </div>
+                    
+                    <div class="setting-row">
+                        <label>SNAKE SKIN</label>
+                        <select id="snakeColorSelect">
+                            <option value="charcoal">Charcoal</option>
+                            <option value="classic">Green</option>
+                            <option value="neonBlue">Blue</option>
+                            <option value="deepRed">Red</option>
+                            <option value="purple">Purple</option>
+                            <option value="gold">Gold</option>
+                        </select>
+                    </div>
+
+                    <div class="setting-row">
+                        <label>CONSOLE COLOR</label>
+                        <input type="color" id="consoleColorPicker" value="#2a2a2a">
+                    </div>
+                    
+                    <button class="ui-btn close" onclick="toggleSettings()">CLOSE</button>
                 </div>
             </div>
         </div>
@@ -208,9 +279,9 @@
             </div>
 
             <div class="desktop-btns">
-                <button onclick="init()" style="background:#222; color:#fff; border:1px solid #444; padding:8px 15px; box-shadow: 0 4px 0 #000;">RESET (R)</button>
-                <button id="deskPause" onclick="handlePause()" style="background:#222; color:#fff; border:1px solid #444; padding:8px 15px; box-shadow: 0 4px 0 #000;">PAUSE (SPACE)</button>
-                <button onclick="toggleSettings()" style="background:#222; color:#fff; border:1px solid #444; padding:8px 15px; box-shadow: 0 4px 0 #000;">SETTINGS</button>
+                <button onclick="init()">RESET (R)</button>
+                <button id="deskPause" onclick="handlePause()">PAUSE (SPACE)</button>
+                <button onclick="toggleSettings()">SETTINGS (S)</button>
             </div>
         </div>
     </div>
@@ -221,8 +292,10 @@
         const scoreEl = document.getElementById("score");
         const hiScoreEl = document.getElementById("hiScore");
         const bgColorPicker = document.getElementById("bgColorPicker");
+        const consoleColorPicker = document.getElementById("consoleColorPicker");
         const snakeColorSelect = document.getElementById("snakeColorSelect");
         const previewImg = document.getElementById("previewImg");
+        const previewContainer = document.getElementById("previewContainer");
 
         const gridSize = 25, overlap = 1.15; 
         const imgHead = new Image(); imgHead.src = 'assets/head.png';
@@ -231,7 +304,7 @@
         const imgCorner = new Image(); imgCorner.src = 'assets/corner.png';
         const imgApple = new Image(); imgApple.src = 'assets/apple.png';
 
-        let snake, food, goldFood, dx, dy, score, gameRunning, isPaused, lastTickTime, firstMoveMade;
+        let snake, food, dx, dy, score, gameRunning, isPaused, lastTickTime, firstMoveMade;
         let inputQueue = [];
         let highStore = localStorage.getItem('snake_hi') || 0;
         hiScoreEl.innerText = highStore;
@@ -248,16 +321,26 @@
 
         function updateStyles() {
             document.documentElement.style.setProperty('--retro-bg', bgColorPicker.value);
+            document.documentElement.style.setProperty('--console-body', consoleColorPicker.value);
             previewImg.style.filter = colorFilters[snakeColorSelect.value];
+            previewContainer.style.backgroundColor = bgColorPicker.value;
         }
 
         bgColorPicker.oninput = updateStyles;
+        consoleColorPicker.oninput = updateStyles;
         snakeColorSelect.onchange = updateStyles;
 
         function toggleSettings() {
+            if (!gameRunning) return; // Prevent opening during Game Over
             const s = document.getElementById("settingsUI");
-            if (gameRunning && firstMoveMade && !isPaused) handlePause();
-            s.style.display = s.style.display === "block" ? "none" : "block";
+            const currentlyOpen = s.style.display === "block";
+            
+            if (!currentlyOpen) {
+                if (firstMoveMade && !isPaused) handlePause();
+                s.style.display = "block";
+            } else {
+                s.style.display = "none";
+            }
             updateStyles();
         }
 
@@ -277,7 +360,7 @@
             document.getElementById("gameOverUI").style.display = "none";
             document.getElementById("settingsUI").style.display = "none";
             document.getElementById("pauseUI").style.display = "none";
-            goldFood = null; lastTickTime = performance.now();
+            lastTickTime = performance.now();
             spawnFood();
             requestAnimationFrame(mainLoop);
         }
@@ -363,11 +446,11 @@
             if (head.y < 0) head.y = canvas.height - gridSize; else if (head.y >= canvas.height) head.y = 0;
             if (snake.some(p => p.x === head.x && p.y === head.y)) { gameRunning = false; document.getElementById("gameOverUI").style.display = "block"; return; }
             snake.unshift(head);
-            let ate = false;
-            if (head.x === food.x && head.y === food.y) { score += 10; ate = true; spawnFood(); }
-            else if (goldFood && head.x === goldFood.x && head.y === goldFood.y) { score += 50; ate = true; goldFood = null; }
-            if (ate) { scoreEl.innerText = score; if(score > highStore) { highStore = score; hiScoreEl.innerText = highStore; localStorage.setItem('snake_hi', highStore); } }
-            else snake.pop();
+            if (head.x === food.x && head.y === food.y) { 
+                score += 10; scoreEl.innerText = score;
+                if(score > highStore) { highStore = score; hiScoreEl.innerText = highStore; localStorage.setItem('snake_hi', highStore); }
+                spawnFood(); 
+            } else snake.pop();
         }
 
         function spawnFood() {
@@ -382,6 +465,10 @@
 
         function drawFood() {
             ctx.save();
+            ctx.shadowBlur = 4;
+            ctx.shadowColor = "rgba(0,0,0,0.3)";
+            ctx.shadowOffsetX = 1;
+            ctx.shadowOffsetY = 1;
             ctx.filter = "sepia(1) hue-rotate(-50deg) saturate(6) brightness(0.5) contrast(1.2)";
             ctx.drawImage(imgApple, food.x, food.y, gridSize, gridSize);
             ctx.restore();
@@ -392,11 +479,7 @@
             const last = inputQueue.length > 0 ? inputQueue[inputQueue.length - 1] : { dx, dy };
             if ((nDx !== 0 && nDx === -last.dx) || (nDy !== 0 && nDy === -last.dy) || (nDx === last.dx && nDy === last.dy)) return;
             if (inputQueue.length < 2) inputQueue.push({ dx: nDx, dy: nDy });
-            if (!firstMoveMade) {
-                firstMoveMade = true;
-                move();
-                lastTickTime = performance.now();
-            }
+            if (!firstMoveMade) { firstMoveMade = true; move(); lastTickTime = performance.now(); }
         }
 
         let anchorX, anchorY;
@@ -423,13 +506,16 @@
 
         window.addEventListener('keydown', (e) => {
             const k = e.key.toLowerCase();
-            if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(k)) { e.preventDefault(); }
+            if (["arrowup", "arrowdown", "arrowleft", "arrowright", " ", "w", "a", "s", "d"].includes(k)) { e.preventDefault(); }
+            
+            if (k === 'r') { init(); return; }
+            if (k === 's') { toggleSettings(); return; }
+            if (k === ' ') { handlePause(); return; }
+
             if (k === 'w' || k === 'arrowup') handleInput(0, -gridSize);
             else if (k === 's' || k === 'arrowdown') handleInput(0, gridSize);
             else if (k === 'a' || k === 'arrowleft') handleInput(-gridSize, 0);
             else if (k === 'd' || k === 'arrowright') handleInput(gridSize, 0);
-            else if (k === 'r') init();
-            else if (k === ' ') handlePause();
         });
 
         window.onload = () => { init(); updateStyles(); };
