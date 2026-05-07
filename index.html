@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Retro Snake | Slink-Console</title>
+    <style>
+        :root { 
+            --retro-bg: #808080; 
+            --retro-ink: #0d0e0a; 
+            --console-body: #2a2a2a;
+        }
+        body {
+            background: #111;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Courier New', Courier, monospace;
+            overflow: hidden;
+            touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .handheld {
+            background: var(--console-body);
+            padding: 20px;
+            border-radius: 20px 20px 60px 20px;
+            box-shadow: inset 0 0 15px #000, 10px 20px 40px rgba(0,0,0,0.8);
+            border: 4px solid #1a1a1a;
+            position: relative;
+            max-width: 95vw;
+        }
+
+        .hud-area {
+            background: #1a1a1a;
+            margin-bottom: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #000;
+            display: flex;
+            justify-content: space-around;
+            color: #0f0; 
+            font-size: 14px;
+            font-weight: bold;
+            box-shadow: inset 0 0 5px #000;
+        }
+
+        .screen-bezel {
+            background: #333;
+            padding: 15px;
+            border-radius: 10px;
+            border: 3px solid #000;
+            box-shadow: inset 0 0 10px #000;
+        }
+
+        .screen {
+            background: var(--retro-bg);
+            border: 5px solid #111;
+            position: relative;
+            overflow: hidden;
+        }
+
+        canvas { 
+            display: block; 
+            image-rendering: pixelated;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .controls-layer {
+            margin-top: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 5px;
+        }
+
+        .d-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 45px);
+            grid-template-rows: repeat(3, 45px);
+        }
+
+        .d-btn, .round-btn, .desktop-btns button {
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .d-btn {
+            background: #1a1a1a;
+            color: #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            box-shadow: 0 4px 0 #000;
+            transition: 0.1s;
+        }
+        .d-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #000; color: #fff; }
+
+        .up { grid-column: 2; border-radius: 8px 8px 0 0; }
+        .left { grid-column: 1; grid-row: 2; border-radius: 8px 0 0 8px; }
+        .right { grid-column: 3; grid-row: 2; border-radius: 0 8px 8px 0; }
+        .down { grid-column: 2; grid-row: 3; border-radius: 0 0 8px 8px; }
+
+        .sys-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; width: 130px; }
+        .round-btn {
+            width: 50px; height: 50px;
+            background: #a00;
+            border-radius: 50%;
+            border: 3px solid #600;
+            box-shadow: 0 4px 0 #300;
+            color: #fff;
+            font-size: 8px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            line-height: 1.1;
+        }
+        .round-btn:active { transform: translateY(3px); box-shadow: 0 1px 0 #300; }
+        .round-btn.blue { background: #0066cc; border-color: #004488; box-shadow: 0 4px 0 #002244; }
+
+        @media (min-width: 769px) {
+            .d-pad, .sys-btns { display: none; }
+            .controls-layer { justify-content: center; gap: 15px; margin-top: 15px; }
+            .desktop-btns { display: flex !important; gap: 10px; }
+        }
+        .desktop-btns { display: none; }
+
+        #gameOverUI, #settingsUI, #pauseUI {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            padding: 20px;
+            text-align: center;
+            border: 3px solid #000;
+            display: none;
+            z-index: 30;
+            width: 80%;
+            backdrop-filter: blur(5px);
+        }
+        #gameOverUI, #pauseUI { background: rgba(0, 0, 0, 0.9); color: #fff; }
+        #settingsUI { background: #222; color: var(--retro-bg); }
+
+        .preview-box { width: 45px; height: 45px; background: var(--retro-bg); border: 2px solid #000; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+    </style>
+</head>
+<body>
+
+    <div class="handheld">
+        <div class="hud-area">
+            <div>SCORE: <span id="score">0</span></div>
+            <div>HI-SCORE: <span id="hiScore">0</span></div>
+        </div>
+
+        <div class="screen-bezel">
+            <div class="screen" id="mainScreen">
+                <canvas id="gameCanvas" width="400" height="400"></canvas>
+                
+                <div id="gameOverUI">
+                    <h3>GAME OVER</h3>
+                    <button onclick="init()" style="background:#fff; border:none; padding:10px; width: 100%;">RETRY</button>
+                </div>
+
+                <div id="pauseUI">
+                    <h3>PAUSED</h3>
+                    <button onclick="handlePause()" style="background:#0f0; color:#000; border:none; padding:10px; width: 100%;">RESUME</button>
+                </div>
+
+                <div id="settingsUI">
+                    <h4>SETTINGS</h4>
+                    <div class="preview-box"><img id="previewImg" src="assets/head.png" style="width:30px; image-rendering:pixelated;"></div>
+                    <div style="font-size: 10px; margin-bottom: 5px;">BG COLOR</div>
+                    <input type="color" id="bgColorPicker" value="#808080" style="width:100%;">
+                    <div style="font-size: 10px; margin: 10px 0 5px;">SNAKE COLOR</div>
+                    <select id="snakeColorSelect" style="width:100%; background:#111; color:#fff; padding:5px;">
+                        <option value="charcoal">Charcoal</option>
+                        <option value="classic">Green</option>
+                        <option value="neonBlue">Blue</option>
+                        <option value="deepRed">Red</option>
+                        <option value="purple">Purple</option>
+                        <option value="gold">Gold</option>
+                    </select>
+                    <button onclick="toggleSettings()" style="margin-top: 15px; width:100%; background:#444; color:#fff; border:none; padding:8px;">CLOSE</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls-layer">
+            <div class="d-pad">
+                <div class="d-btn up" id="ctrlUp">▲</div>
+                <div class="d-btn left" id="ctrlLeft">◀</div>
+                <div class="d-btn right" id="ctrlRight">▶</div>
+                <div class="d-btn down" id="ctrlDown">▼</div>
+            </div>
+
+            <div class="sys-btns">
+                <div class="round-btn" onclick="init()">START<br>RESET</div>
+                <div class="round-btn blue" onclick="handlePause()">PAUSE<br>RESUME</div>
+                <div class="round-btn" onclick="toggleSettings()">SET<br>UP</div>
+            </div>
+
+            <div class="desktop-btns">
+                <button onclick="init()" style="background:#222; color:#fff; border:1px solid #444; padding:8px 15px; box-shadow: 0 4px 0 #000;">RESET (R)</button>
+                <button id="deskPause" onclick="handlePause()" style="background:#222; color:#fff; border:1px solid #444; padding:8px 15px; box-shadow: 0 4px 0 #000;">PAUSE (SPACE)</button>
+                <button onclick="toggleSettings()" style="background:#222; color:#fff; border:1px solid #444; padding:8px 15px; box-shadow: 0 4px 0 #000;">SETTINGS</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        const scoreEl = document.getElementById("score");
+        const hiScoreEl = document.getElementById("hiScore");
+        const bgColorPicker = document.getElementById("bgColorPicker");
+        const snakeColorSelect = document.getElementById("snakeColorSelect");
+        const previewImg = document.getElementById("previewImg");
+
+        const gridSize = 25, overlap = 1.15; 
+        const imgHead = new Image(); imgHead.src = 'assets/head.png';
+        const imgBody = new Image(); imgBody.src = 'assets/body.png';
+        const imgTail = new Image(); imgTail.src = 'assets/tail.png';
+        const imgCorner = new Image(); imgCorner.src = 'assets/corner.png';
+        const imgApple = new Image(); imgApple.src = 'assets/apple.png';
+
+        let snake, food, goldFood, dx, dy, score, gameRunning, isPaused, lastTickTime, firstMoveMade;
+        let inputQueue = [];
+        let highStore = localStorage.getItem('snake_hi') || 0;
+        hiScoreEl.innerText = highStore;
+        const moveInterval = 130; 
+
+        const colorFilters = {
+            charcoal: "grayscale(1) brightness(0.6) contrast(1.2)",
+            classic: "saturate(1.5) brightness(1.1)",
+            neonBlue: "hue-rotate(80deg) saturate(3) brightness(1.2)",
+            deepRed: "sepia(1) hue-rotate(-50deg) saturate(5) brightness(0.8)",
+            purple: "hue-rotate(160deg) saturate(2.5) brightness(1.1)",
+            gold: "sepia(1) hue-rotate(5deg) saturate(10) brightness(1.5)"
+        };
+
+        function updateStyles() {
+            document.documentElement.style.setProperty('--retro-bg', bgColorPicker.value);
+            previewImg.style.filter = colorFilters[snakeColorSelect.value];
+        }
+
+        bgColorPicker.oninput = updateStyles;
+        snakeColorSelect.onchange = updateStyles;
+
+        function toggleSettings() {
+            const s = document.getElementById("settingsUI");
+            if (gameRunning && firstMoveMade && !isPaused) handlePause();
+            s.style.display = s.style.display === "block" ? "none" : "block";
+            updateStyles();
+        }
+
+        function handlePause() {
+            if (!gameRunning || !firstMoveMade) return;
+            isPaused = !isPaused;
+            document.getElementById("pauseUI").style.display = isPaused ? "block" : "none";
+            const deskBtn = document.getElementById("deskPause");
+            if(deskBtn) deskBtn.innerText = isPaused ? "RESUME (SPACE)" : "PAUSE (SPACE)";
+        }
+
+        function init() {
+            score = 0; scoreEl.innerText = "0";
+            dx = 0; dy = 0; inputQueue = [];
+            snake = [{x: 200, y: 150}, {x: 200, y: 175}, {x: 200, y: 200}];
+            gameRunning = true; isPaused = false; firstMoveMade = false;
+            document.getElementById("gameOverUI").style.display = "none";
+            document.getElementById("settingsUI").style.display = "none";
+            document.getElementById("pauseUI").style.display = "none";
+            goldFood = null; lastTickTime = performance.now();
+            spawnFood();
+            requestAnimationFrame(mainLoop);
+        }
+
+        function mainLoop(currentTime) {
+            if (!gameRunning) return;
+            if (!isPaused && firstMoveMade) {
+                const delta = currentTime - lastTickTime;
+                if (delta >= moveInterval) { move(); lastTickTime = currentTime; }
+            }
+            render();
+            requestAnimationFrame(mainLoop);
+        }
+
+        function drawGrid() {
+            ctx.save();
+            ctx.lineWidth = 1;
+            ctx.strokeStyle = "rgba(0, 0, 0, 0.1)"; 
+            for (let x = 0; x <= canvas.width; x += gridSize) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
+            for (let y = 0; y <= canvas.height; y += gridSize) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+            }
+            ctx.restore();
+        }
+
+        function render() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawGrid();
+            drawFood();
+            drawSnake();
+        }
+
+        function drawSnake() {
+            const currentFilter = colorFilters[snakeColorSelect.value];
+            snake.forEach((part, i) => {
+                const prev = snake[i-1], next = snake[i+1];
+                let angle = 0, img = imgBody;
+                if (i === 0) {
+                    img = imgHead;
+                    if (dx === gridSize) angle = Math.PI/2;
+                    else if (dx === -gridSize) angle = -Math.PI/2;
+                    else if (dy === gridSize) angle = Math.PI;
+                } else if (i === snake.length - 1) {
+                    img = imgTail;
+                    const relPrev = getRelativePos(part, prev);
+                    if (relPrev.x > 0) angle = Math.PI/2;
+                    else if (relPrev.x < 0) angle = -Math.PI/2;
+                    else if (relPrev.y > 0) angle = Math.PI;
+                } else {
+                    const p = getRelativePos(part, prev), n = getRelativePos(part, next);
+                    if (p.x !== n.x && p.y !== n.y) {
+                        img = imgCorner;
+                        if ((p.x === gridSize && n.y === gridSize) || (n.x === gridSize && p.y === gridSize)) angle = -Math.PI/2;
+                        else if ((p.y === gridSize && n.x === -gridSize) || (n.y === gridSize && p.x === -gridSize)) angle = 0;
+                        else if ((p.x === -gridSize && n.y === -gridSize) || (n.x === -gridSize && p.y === -gridSize)) angle = Math.PI/2;
+                        else if ((p.y === -gridSize && n.x === gridSize) || (n.y === -gridSize && p.x === gridSize)) angle = Math.PI;
+                    } else angle = (p.x !== 0) ? Math.PI/2 : 0;
+                }
+                
+                [ {off:2, filt: "brightness(0) opacity(0.3)"}, {off:0, filt: currentFilter} ].forEach(set => {
+                    ctx.save();
+                    ctx.translate(part.x + gridSize/2 + set.off, part.y + gridSize/2 + set.off);
+                    ctx.rotate(angle); ctx.filter = set.filt;
+                    ctx.drawImage(img, -gridSize*overlap/2, -gridSize*overlap/2, gridSize*overlap, gridSize*overlap);
+                    ctx.restore();
+                });
+            });
+        }
+
+        function getRelativePos(current, neighbor) {
+            let diffX = neighbor.x - current.x, diffY = neighbor.y - current.y;
+            if (Math.abs(diffX) > gridSize) diffX = diffX > 0 ? diffX - canvas.width : diffX + canvas.width;
+            if (Math.abs(diffY) > gridSize) diffY = diffY > 0 ? diffY - canvas.height : diffY + canvas.height;
+            return { x: diffX, y: diffY };
+        }
+
+        function move() {
+            if (inputQueue.length > 0) { const m = inputQueue.shift(); dx = m.dx; dy = m.dy; }
+            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            if (head.x < 0) head.x = canvas.width - gridSize; else if (head.x >= canvas.width) head.x = 0;
+            if (head.y < 0) head.y = canvas.height - gridSize; else if (head.y >= canvas.height) head.y = 0;
+            if (snake.some(p => p.x === head.x && p.y === head.y)) { gameRunning = false; document.getElementById("gameOverUI").style.display = "block"; return; }
+            snake.unshift(head);
+            let ate = false;
+            if (head.x === food.x && head.y === food.y) { score += 10; ate = true; spawnFood(); }
+            else if (goldFood && head.x === goldFood.x && head.y === goldFood.y) { score += 50; ate = true; goldFood = null; }
+            if (ate) { scoreEl.innerText = score; if(score > highStore) { highStore = score; hiScoreEl.innerText = highStore; localStorage.setItem('snake_hi', highStore); } }
+            else snake.pop();
+        }
+
+        function spawnFood() {
+            let nx, ny, v = false;
+            while (!v) {
+                nx = Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize;
+                ny = Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize;
+                if (!snake.some(p => p.x === nx && p.y === ny)) v = true;
+            }
+            food = { x: nx, y: ny };
+        }
+
+        function drawFood() {
+            ctx.save();
+            ctx.filter = "sepia(1) hue-rotate(-50deg) saturate(6) brightness(0.5) contrast(1.2)";
+            ctx.drawImage(imgApple, food.x, food.y, gridSize, gridSize);
+            ctx.restore();
+        }
+
+        function handleInput(nDx, nDy) {
+            if (!gameRunning || isPaused) return;
+            const last = inputQueue.length > 0 ? inputQueue[inputQueue.length - 1] : { dx, dy };
+            if ((nDx !== 0 && nDx === -last.dx) || (nDy !== 0 && nDy === -last.dy) || (nDx === last.dx && nDy === last.dy)) return;
+            if (inputQueue.length < 2) inputQueue.push({ dx: nDx, dy: nDy });
+            if (!firstMoveMade) {
+                firstMoveMade = true;
+                move();
+                lastTickTime = performance.now();
+            }
+        }
+
+        let anchorX, anchorY;
+        canvas.addEventListener('touchstart', (e) => { anchorX = e.touches[0].clientX; anchorY = e.touches[0].clientY; }, {passive:false});
+        canvas.addEventListener('touchmove', (e) => {
+            if (!gameRunning || isPaused) return;
+            if (e.cancelable) e.preventDefault();
+            const curX = e.touches[0].clientX, curY = e.touches[0].clientY;
+            const dX = curX - anchorX, dY = curY - anchorY;
+            const threshold = 18; 
+            if (Math.abs(dX) > threshold || Math.abs(dY) > threshold) {
+                if (Math.abs(dX) > Math.abs(dY)) handleInput(dX > 0 ? gridSize : -gridSize, 0);
+                else handleInput(0, dY > 0 ? gridSize : -gridSize);
+                anchorX = curX; anchorY = curY;
+            }
+        }, {passive:false});
+
+        const bindBtn = (id, x, y) => { 
+            const btn = document.getElementById(id);
+            if(btn) btn.onpointerdown = (e) => { e.preventDefault(); handleInput(x, y); }; 
+        };
+        bindBtn("ctrlUp", 0, -gridSize); bindBtn("ctrlDown", 0, gridSize);
+        bindBtn("ctrlLeft", -gridSize, 0); bindBtn("ctrlRight", gridSize, 0);
+
+        window.addEventListener('keydown', (e) => {
+            const k = e.key.toLowerCase();
+            if (["arrowup", "arrowdown", "arrowleft", "arrowright", " "].includes(k)) { e.preventDefault(); }
+            if (k === 'w' || k === 'arrowup') handleInput(0, -gridSize);
+            else if (k === 's' || k === 'arrowdown') handleInput(0, gridSize);
+            else if (k === 'a' || k === 'arrowleft') handleInput(-gridSize, 0);
+            else if (k === 'd' || k === 'arrowright') handleInput(gridSize, 0);
+            else if (k === 'r') init();
+            else if (k === ' ') handlePause();
+        });
+
+        window.onload = () => { init(); updateStyles(); };
+    </script>
+</body>
+</html>
