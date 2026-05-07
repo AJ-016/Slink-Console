@@ -21,8 +21,8 @@
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center; /* Centering fix */
-            height: 100vh; /* Centering fix */
+            justify-content: center;
+            height: 100vh;
             margin: 0;
             font-family: 'Courier New', Courier, monospace;
             overflow: hidden;
@@ -42,21 +42,21 @@
 
         .hud-area {
             background: #1a1a1a;
-            margin-bottom: 15px;
-            padding: 10px;
+            margin-bottom: 12px;
+            padding: 8px;
             border-radius: 8px;
             border: 2px solid #000;
             display: flex;
             justify-content: space-around;
             color: #0f0; 
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             box-shadow: inset 0 0 5px #000;
         }
 
         .screen-bezel {
             background: #333;
-            padding: 15px;
+            padding: 12px;
             border-radius: 10px;
             border: 3px solid #000;
             box-shadow: inset 0 0 10px #000;
@@ -67,14 +67,32 @@
             border: 5px solid #111;
             position: relative;
             overflow: hidden;
+            width: 280px;
+            height: 280px;
         }
 
-        canvas { 
-            display: block; 
-            image-rendering: pixelated;
-            max-width: 100%;
-            height: auto;
+        canvas { display: block; image-rendering: pixelated; width: 100%; height: 100%; }
+
+        .overlay-ui {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 15px;
+            box-sizing: border-box;
+            text-align: center;
         }
+
+        .mech-btn { cursor: pointer; position: relative; transition: 0.05s; outline: none; border: none; font-family: inherit; }
+        .mech-btn.pressed { transform: translateY(3px) !important; box-shadow: 0 1px 0 #000 !important; }
+
+        .ui-btn { background: #eee; color: #000; padding: 10px; width: 100%; font-weight: bold; box-shadow: 0 4px 0 #999; margin-top: 8px; }
+        .ui-btn.red { background: #a00; color: #fff; box-shadow: 0 4px 0 #600; }
 
         .controls-layer {
             margin-top: 25px;
@@ -84,34 +102,8 @@
             padding: 0 5px;
         }
 
-        .d-pad {
-            display: grid;
-            grid-template-columns: repeat(3, 45px);
-            grid-template-rows: repeat(3, 45px);
-        }
-
-        .d-btn, .round-btn, .desktop-btns button, .ui-btn {
-            outline: none;
-            cursor: pointer;
-            position: relative;
-            transition: transform 0.05s, box-shadow 0.05s;
-        }
-
-        .d-btn {
-            background: #1a1a1a;
-            color: #555;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            box-shadow: 0 6px 0 #000;
-        }
-        .d-btn:active { 
-            transform: translateY(4px); 
-            box-shadow: 0 2px 0 #000; 
-            color: #fff; 
-        }
-
+        .d-pad { display: grid; grid-template-columns: repeat(3, 45px); grid-template-rows: repeat(3, 45px); }
+        .d-btn { background: #1a1a1a; color: #555; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 6px 0 #000; }
         .up { grid-column: 2; border-radius: 8px 8px 0 0; }
         .left { grid-column: 1; grid-row: 2; border-radius: 8px 0 0 8px; }
         .right { grid-column: 3; grid-row: 2; border-radius: 0 8px 8px 0; }
@@ -119,96 +111,38 @@
 
         .sys-btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; width: 130px; }
         .round-btn {
-            width: 50px; height: 50px;
-            background: #a00;
-            border-radius: 50%;
-            border: 3px solid #600;
-            box-shadow: 0 6px 0 #300;
-            color: #fff;
-            font-size: 8px;
-            font-weight: bold;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            line-height: 1.1;
+            width: 50px; height: 50px; background: #a00; border-radius: 50%;
+            border: 3px solid #600; box-shadow: 0 6px 0 #300;
+            color: #fff; font-size: 8px; font-weight: bold;
+            display: flex; align-items: center; justify-content: center; text-align: center; line-height: 1.1;
         }
-        .round-btn:active { transform: translateY(4px); box-shadow: 0 2px 0 #300; }
-        .round-btn.blue { background: #0066cc; border-color: #004488; box-shadow: 0 6px 0 #002244; }
-        .round-btn.blue:active { box-shadow: 0 2px 0 #002244; }
+        .round-btn.blue { background: #0066cc; border-color: #004488; box-shadow: 0 6px 0 #002244; font-size: 14px; }
+        .pill-help { width: 50px; height: 20px; background: #555; border-radius: 10px; border: 2px solid #333; box-shadow: 0 4px 0 #000; color: #ccc; font-size: 8px; font-weight: bold; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+
+        .desktop-btns { display: none; margin-top: 15px; width: 100%; justify-content: center; gap: 8px; }
+        .desktop-btns button { 
+            background: #222; color: #fff; border: 1px solid #444; 
+            padding: 8px 12px; box-shadow: 0 4px 0 #000; 
+            font-size: 10px; border-radius: 4px; flex-shrink: 0;
+        }
+        .pause-sym { font-family: sans-serif; font-weight: bold; }
 
         @media (min-width: 769px) {
-            .d-pad, .sys-btns { display: none; }
-            .controls-layer { justify-content: center; gap: 15px; margin-top: 15px; }
-            .desktop-btns { display: flex !important; gap: 10px; }
-        }
-        .desktop-btns { display: none; }
-        .desktop-btns button {
-            background: #222; 
-            color: #fff; 
-            border: 1px solid #444; 
-            padding: 8px 15px; 
-            box-shadow: 0 4px 0 #000;
-        }
-        .desktop-btns button:active { transform: translateY(2px); box-shadow: 0 1px 0 #000; }
-
-        #gameOverUI, #settingsUI, #pauseUI {
-            position: absolute;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            padding: 20px;
-            text-align: center;
-            border: 3px solid #000;
-            display: none;
-            z-index: 30;
-            width: 85%;
-            backdrop-filter: blur(5px);
-        }
-        #gameOverUI, #pauseUI { background: rgba(0, 0, 0, 0.9); color: #fff; }
-        #settingsUI { background: #222; color: #fff; }
-
-        .setting-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            gap: 10px;
-        }
-        .setting-row label {
-            font-size: 10px;
-            text-align: left;
-            flex-grow: 1;
-            white-space: nowrap;
-        }
-        .setting-row input, .setting-row select {
-            flex-basis: 50%;
-            background: #111;
-            color: #fff;
-            border: 1px solid #444;
-            height: 25px;
-            padding: 2px;
+            .controls-layer { display: none; }
+            .desktop-btns { display: flex; }
         }
 
-        .ui-btn {
-            background: #fff;
-            color: #000;
-            border: none;
-            padding: 10px;
-            width: 100%;
-            font-weight: bold;
-            box-shadow: 0 4px 0 #999;
-            margin-top: 5px;
-        }
-        .ui-btn:active {
-            transform: translateY(3px);
-            box-shadow: 0 1px 0 #999;
-        }
-        .ui-btn.resume { background: #eee; color: #000; box-shadow: 0 4px 0 #999; }
-        .ui-btn.resume:active { box-shadow: 0 1px 0 #999; }
-        .ui-btn.close { background: #444; color: #fff; box-shadow: 0 4px 0 #222; }
-        .ui-btn.close:active { box-shadow: 0 1px 0 #222; }
+        .help-table { width: 100%; font-size: 9px; text-align: left; border-collapse: collapse; margin: 10px 0; }
+        .help-table td { padding: 4px 0; border-bottom: 1px solid #333; }
+        .help-table .val { text-align: right; color: #0f0; font-weight: bold; }
 
-        .preview-box { width: 45px; height: 45px; border: 2px solid #000; display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; }
+        .setting-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; width: 100%; gap: 5px; }
+        .setting-row label { font-size: 9px; white-space: nowrap; }
+        .setting-row input, .setting-row select { flex-basis: 55%; background: #111; color: #fff; border: 1px solid #444; height: 22px; font-size: 10px; }
+        .preview-box { width: 40px; height: 40px; border: 1px solid #000; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+        .records-list { width: 100%; font-size: 9px; text-align: left; border-collapse: collapse; margin-bottom: 10px; }
+        .records-list th { color: #0f0; border-bottom: 1px solid #444; padding: 4px; }
+        .records-list td { padding: 4px; border-bottom: 1px solid #222; }
     </style>
 </head>
 <body>
@@ -216,108 +150,155 @@
     <div class="handheld" id="consoleShell">
         <div class="hud-area">
             <div>SCORE: <span id="score">0</span></div>
-            <div>HI-SCORE: <span id="hiScore">0</span></div>
+            <div>BEST: <span id="hiScore">0</span></div>
         </div>
 
         <div class="screen-bezel">
             <div class="screen" id="mainScreen">
                 <canvas id="gameCanvas" width="400" height="400"></canvas>
                 
-                <div id="gameOverUI">
-                    <h3>GAME OVER</h3>
-                    <button class="ui-btn" onclick="init()">RETRY</button>
+                <div id="bootUI" class="overlay-ui">
+                    <h4 style="margin:0; color:#0f0;">SYSTEM HELP</h4>
+                    <table class="help-table" id="helpTable"></table>
+                    <button class="ui-btn mech-btn" onclick="helpResume()">CONTINUE</button>
                 </div>
 
-                <div id="pauseUI">
-                    <h3>PAUSED</h3>
-                    <button class="ui-btn resume" onclick="handlePause()">RESUME</button>
+                <div id="mainMenuUI" class="overlay-ui" style="display:none;">
+                    <h2 style="margin:0 0 15px 0;">SLINK</h2>
+                    <button class="ui-btn mech-btn" onclick="startGame()">START GAME</button>
+                    <button class="ui-btn mech-btn" onclick="showSubMenu('modeMenuUI')">MODES</button>
+                    <button class="ui-btn mech-btn" onclick="updateRecordsDisplay(); showSubMenu('recordsUI')">RECORDS</button>
+                    <button class="ui-btn mech-btn" onclick="showSubMenu('settingsUI')">SETTINGS</button>
                 </div>
 
-                <div id="settingsUI">
+                <div id="recordsUI" class="overlay-ui" style="display:none;">
+                    <h4>HALL OF FAME</h4>
+                    <table class="records-list" id="recordsTable"></table>
+                    <button class="ui-btn red mech-btn" onclick="showSubMenu('mainMenuUI')">BACK</button>
+                </div>
+
+                <div id="modeMenuUI" class="overlay-ui" style="display:none;">
+                    <h4>GAME SETUP</h4>
+                    <div class="setting-row"><label>WALLS</label>
+                        <select id="wallModeSelect"><option value="wrap">WRAP-AROUND</option><option value="solid">SOLID WALLS</option></select>
+                    </div>
+                    <div class="setting-row"><label>DIFFICULTY</label>
+                        <select id="diffModeSelect"><option value="130">NORMAL</option><option value="100">MODERATE</option><option value="80">INSANE</option></select>
+                    </div>
+                    <button class="ui-btn red mech-btn" onclick="showSubMenu('mainMenuUI')">BACK</button>
+                </div>
+
+                <div id="settingsUI" class="overlay-ui" style="display:none;">
                     <h4>SETTINGS</h4>
-                    <div class="preview-box" id="previewContainer"><img id="previewImg" src="assets/head.png" style="width:30px; image-rendering:pixelated;"></div>
-                    
-                    <div class="setting-row">
-                        <label>BG COLOR</label>
-                        <input type="color" id="bgColorPicker" value="#808080">
+                    <div class="preview-box" id="previewContainer"><img id="previewImg" src="assets/head.png" style="width:25px; image-rendering:pixelated;"></div>
+                    <div class="setting-row"><label>BG COLOR</label><input type="color" id="bgColorPicker" value="#808080"></div>
+                    <div class="setting-row"><label>SNAKE SKIN</label>
+                        <select id="snakeColorSelect"><option value="charcoal">Charcoal</option><option value="classic">Green</option><option value="neonBlue">Blue</option><option value="deepRed">Red</option><option value="purple">Purple</option><option value="gold">Gold</option></select>
                     </div>
-                    
-                    <div class="setting-row">
-                        <label>SNAKE SKIN</label>
-                        <select id="snakeColorSelect">
-                            <option value="charcoal">Charcoal</option>
-                            <option value="classic">Green</option>
-                            <option value="neonBlue">Blue</option>
-                            <option value="deepRed">Red</option>
-                            <option value="purple">Purple</option>
-                            <option value="gold">Gold</option>
-                        </select>
-                    </div>
+                    <div class="setting-row"><label>SHELL COLOR</label><input type="color" id="consoleColorPicker" value="#2a2a2a"></div>
+                    <button class="ui-btn mech-btn" style="background:#555; color:#fff;" onclick="applyRetroTheme()">RETRO RESET</button>
+                    <button class="ui-btn red mech-btn" onclick="showSubMenu('mainMenuUI')">BACK</button>
+                </div>
 
-                    <div class="setting-row">
-                        <label>CONSOLE COLOR</label>
-                        <input type="color" id="consoleColorPicker" value="#2a2a2a">
-                    </div>
-                    
-                    <button class="ui-btn close" onclick="toggleSettings()">CLOSE</button>
+                <div id="gameOverUI" class="overlay-ui" style="display:none;">
+                    <h3>GAME OVER</h3>
+                    <div id="gameOverStats" style="font-size: 11px; margin-bottom: 10px;"></div>
+                    <button class="ui-btn mech-btn" onclick="startGame()">RETRY</button>
+                    <button class="ui-btn red mech-btn" onclick="resetToMenu()">MENU</button>
                 </div>
             </div>
         </div>
 
         <div class="controls-layer">
             <div class="d-pad">
-                <div class="d-btn up" id="ctrlUp">▲</div>
-                <div class="d-btn left" id="ctrlLeft">◀</div>
-                <div class="d-btn right" id="ctrlRight">▶</div>
-                <div class="d-btn down" id="ctrlDown">▼</div>
+                <div class="d-btn mech-btn up" id="ctrlUp">▲</div>
+                <div class="d-btn mech-btn left" id="ctrlLeft">◀</div>
+                <div class="d-btn mech-btn right" id="ctrlRight">▶</div>
+                <div class="d-btn mech-btn down" id="ctrlDown">▼</div>
             </div>
-
             <div class="sys-btns">
-                <div class="round-btn" onclick="init()">START<br>RESET</div>
-                <div class="round-btn blue" onclick="handlePause()">PAUSE<br>RESUME</div>
-                <div class="round-btn" onclick="toggleSettings()">SET<br>UP</div>
+                <div class="pill-help mech-btn" onclick="openHelp()">HELP ?</div>
+                <div class="round-btn mech-btn" onclick="resetToMenu()">MENU<br>RESET</div>
+                <div class="round-btn blue mech-btn pause-sym" id="mPause" onclick="handlePause()">❙ ❙</div>
             </div>
+        </div>
 
-            <div class="desktop-btns">
-                <button onclick="init()">RESET (R)</button>
-                <button id="deskPause" onclick="handlePause()">PAUSE (SPACE)</button>
-                <button onclick="toggleSettings()">SETTINGS (S)</button>
-            </div>
+        <div class="desktop-btns">
+            <button class="mech-btn" onclick="resetToMenu()">MENU (M)</button>
+            <button id="deskPause" class="mech-btn pause-sym" onclick="handlePause()">❙ ❙</button>
+            <button class="mech-btn" onclick="openHelp()">HELP (H)</button>
         </div>
     </div>
 
     <script>
         const canvas = document.getElementById("gameCanvas");
         const ctx = canvas.getContext("2d");
-        const scoreEl = document.getElementById("score");
-        const hiScoreEl = document.getElementById("hiScore");
-        const bgColorPicker = document.getElementById("bgColorPicker");
-        const consoleColorPicker = document.getElementById("consoleColorPicker");
-        const snakeColorSelect = document.getElementById("snakeColorSelect");
-        const previewImg = document.getElementById("previewImg");
+        const scoreEl = document.getElementById("score"), hiScoreEl = document.getElementById("hiScore");
+        const bgColorPicker = document.getElementById("bgColorPicker"), consoleColorPicker = document.getElementById("consoleColorPicker");
+        const snakeColorSelect = document.getElementById("snakeColorSelect"), wallModeSelect = document.getElementById("wallModeSelect");
+        const diffModeSelect = document.getElementById("diffModeSelect"), previewImg = document.getElementById("previewImg");
         const previewContainer = document.getElementById("previewContainer");
 
         const gridSize = 25, overlap = 1.15; 
-        const imgHead = new Image(); imgHead.src = 'assets/head.png';
-        const imgBody = new Image(); imgBody.src = 'assets/body.png';
-        const imgTail = new Image(); imgTail.src = 'assets/tail.png';
-        const imgCorner = new Image(); imgCorner.src = 'assets/corner.png';
-        const imgApple = new Image(); imgApple.src = 'assets/apple.png';
+        const assets = { head: new Image(), body: new Image(), tail: new Image(), corner: new Image(), apple: new Image() };
+        assets.head.src = 'assets/head.png'; assets.body.src = 'assets/body.png';
+        assets.tail.src = 'assets/tail.png'; assets.corner.src = 'assets/corner.png';
+        assets.apple.src = 'assets/apple.png';
 
-        let snake, food, dx, dy, score, gameRunning, isPaused, lastTickTime, firstMoveMade;
+        let snake, food, goldFood, dx, dy, score = 0, gameRunning = false, isPaused = false, isHelpOpen = false, lastTickTime, firstMoveMade;
         let inputQueue = [];
-        let highStore = localStorage.getItem('snake_hi') || 0;
-        hiScoreEl.innerText = highStore;
-        const moveInterval = 130; 
+        let goldenActive = false, goldenBoostEnd = 0;
+        let globalBest = localStorage.getItem('snake_hi') || 0;
+        let detailedScores = JSON.parse(localStorage.getItem('slink_detailed_scores')) || { wrap: { "130": 0, "100": 0, "80": 0 }, solid: { "130": 0, "100": 0, "80": 0 } };
+        hiScoreEl.innerText = globalBest;
 
-        const colorFilters = {
-            charcoal: "grayscale(1) brightness(0.6) contrast(1.2)",
-            classic: "saturate(1.5) brightness(1.1)",
-            neonBlue: "hue-rotate(80deg) saturate(3) brightness(1.2)",
-            deepRed: "sepia(1) hue-rotate(-50deg) saturate(5) brightness(0.8)",
-            purple: "hue-rotate(160deg) saturate(2.5) brightness(1.1)",
-            gold: "sepia(1) hue-rotate(5deg) saturate(10) brightness(1.5)"
-        };
+        const colorFilters = { charcoal: "grayscale(1) brightness(0.6) contrast(1.2)", classic: "saturate(1.5) brightness(1.1)", neonBlue: "hue-rotate(80deg) saturate(3) brightness(1.2)", deepRed: "sepia(1) hue-rotate(-50deg) saturate(5) brightness(0.8)", purple: "hue-rotate(160deg) saturate(2.5) brightness(1.1)", gold: "sepia(1) hue-rotate(5deg) saturate(10) brightness(1.5)" };
+
+        function initTactileLogic() {
+            document.querySelectorAll('.mech-btn').forEach(btn => {
+                const press = () => btn.classList.add('pressed');
+                const release = () => btn.classList.remove('pressed');
+                btn.onpointerdown = press;
+                btn.onpointerup = btn.onpointerleave = release;
+            });
+        }
+
+        function openHelp() {
+            if (isHelpOpen) return;
+            isHelpOpen = true;
+            if (gameRunning && firstMoveMade && !isPaused) {
+                isPaused = true;
+                document.getElementById("mPause").innerText = "▶";
+                document.getElementById("deskPause").innerText = "▶";
+            }
+            const isMobile = window.innerWidth <= 768;
+            const table = document.getElementById('helpTable');
+            table.innerHTML = isMobile ? 
+                `<tr><td>MOVE</td><td class="val">SWIPE</td></tr>
+                 <tr><td>D-PAD</td><td class="val">PRECISION</td></tr>
+                 <tr><td>PAUSE</td><td class="val">BLUE (❙ ❙)</td></tr>
+                 <tr><td>MENU</td><td class="val">RED ROUND</td></tr>` :
+                `<tr><td>MOVE</td><td class="val">WASD/ARROWS</td></tr>
+                 <tr><td>PAUSE</td><td class="val">SPACEBAR</td></tr>
+                 <tr><td>MENU</td><td class="val">M KEY</td></tr>
+                 <tr><td>RESET</td><td class="val">R KEY</td></tr>`;
+            showSubMenu('bootUI');
+        }
+
+        function helpResume() {
+            isHelpOpen = false;
+            document.getElementById('bootUI').style.display = 'none';
+            if (!gameRunning || !firstMoveMade) resetToMenu();
+        }
+
+        function updateRecordsDisplay() {
+            document.getElementById("recordsTable").innerHTML = `<tr><th>MODE</th><th>WRAP</th><th>SOLID</th></tr>
+                <tr><td>NORMAL</td><td>${detailedScores.wrap["130"]}</td><td>${detailedScores.solid["130"]}</td></tr>
+                <tr><td>MODERATE</td><td>${detailedScores.wrap["100"]}</td><td>${detailedScores.solid["100"]}</td></tr>
+                <tr><td>INSANE</td><td>${detailedScores.wrap["80"]}</td><td>${detailedScores.solid["80"]}</td></tr>`;
+        }
+
+        function applyRetroTheme() { bgColorPicker.value = "#808080"; consoleColorPicker.value = "#2a2a2a"; snakeColorSelect.value = "charcoal"; updateStyles(); }
 
         function updateStyles() {
             document.documentElement.style.setProperty('--retro-bg', bgColorPicker.value);
@@ -326,40 +307,37 @@
             previewContainer.style.backgroundColor = bgColorPicker.value;
         }
 
-        bgColorPicker.oninput = updateStyles;
-        consoleColorPicker.oninput = updateStyles;
-        snakeColorSelect.onchange = updateStyles;
+        [bgColorPicker, consoleColorPicker, snakeColorSelect].forEach(el => el.oninput = el.onchange = updateStyles);
 
-        function toggleSettings() {
-            if (!gameRunning) return; // Prevent opening during Game Over
-            const s = document.getElementById("settingsUI");
-            const currentlyOpen = s.style.display === "block";
-            
-            if (!currentlyOpen) {
-                if (firstMoveMade && !isPaused) handlePause();
-                s.style.display = "block";
-            } else {
-                s.style.display = "none";
-            }
+        function showSubMenu(menuId) {
+            document.querySelectorAll('.overlay-ui').forEach(el => el.style.display = 'none');
+            document.getElementById(menuId).style.display = 'flex';
             updateStyles();
+            initTactileLogic();
+        }
+
+        function resetToMenu() { 
+            gameRunning = false; isHelpOpen = false; goldenActive = false;
+            score = 0; scoreEl.innerText = "0";
+            showSubMenu('mainMenuUI'); 
         }
 
         function handlePause() {
-            if (!gameRunning || !firstMoveMade) return;
+            if (!gameRunning || !firstMoveMade || isHelpOpen) return;
             isPaused = !isPaused;
-            document.getElementById("pauseUI").style.display = isPaused ? "block" : "none";
-            const deskBtn = document.getElementById("deskPause");
-            if(deskBtn) deskBtn.innerText = isPaused ? "RESUME (SPACE)" : "PAUSE (SPACE)";
+            const sym = isPaused ? "▶" : "❙ ❙";
+            document.getElementById("mPause").innerText = sym;
+            document.getElementById("deskPause").innerText = sym;
         }
 
-        function init() {
-            score = 0; scoreEl.innerText = "0";
-            dx = 0; dy = 0; inputQueue = [];
+        function startGame() {
+            score = 0; scoreEl.innerText = "0"; dx = 0; dy = 0; inputQueue = [];
             snake = [{x: 200, y: 150}, {x: 200, y: 175}, {x: 200, y: 200}];
-            gameRunning = true; isPaused = false; firstMoveMade = false;
-            document.getElementById("gameOverUI").style.display = "none";
-            document.getElementById("settingsUI").style.display = "none";
-            document.getElementById("pauseUI").style.display = "none";
+            gameRunning = true; isPaused = false; firstMoveMade = false; isHelpOpen = false;
+            goldenActive = false; goldFood = null;
+            document.querySelectorAll('.overlay-ui').forEach(el => el.style.display = 'none');
+            document.getElementById("mPause").innerText = "❙ ❙";
+            document.getElementById("deskPause").innerText = "❙ ❙";
             lastTickTime = performance.now();
             spawnFood();
             requestAnimationFrame(mainLoop);
@@ -369,52 +347,43 @@
             if (!gameRunning) return;
             if (!isPaused && firstMoveMade) {
                 const delta = currentTime - lastTickTime;
-                if (delta >= moveInterval) { move(); lastTickTime = currentTime; }
+                let currentInterval = parseInt(diffModeSelect.value);
+                if (goldenActive) {
+                    currentInterval *= 0.8; 
+                    if (currentTime > goldenBoostEnd) goldenActive = false;
+                }
+                if (goldFood && currentTime > goldFood.expiry) goldFood = null;
+                if (delta >= currentInterval) { move(); lastTickTime = currentTime; }
             }
             render();
             requestAnimationFrame(mainLoop);
         }
 
         function drawGrid() {
-            ctx.save();
-            ctx.lineWidth = 1;
-            ctx.strokeStyle = "rgba(0, 0, 0, 0.1)"; 
-            for (let x = 0; x <= canvas.width; x += gridSize) {
-                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
-            }
-            for (let y = 0; y <= canvas.height; y += gridSize) {
-                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
-            }
+            ctx.save(); ctx.lineWidth = 1; ctx.strokeStyle = "rgba(0, 0, 0, 0.1)"; 
+            for (let x = 0; x <= canvas.width; x += gridSize) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+            for (let y = 0; y <= canvas.height; y += gridSize) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
             ctx.restore();
         }
 
-        function render() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            drawGrid();
-            drawFood();
-            drawSnake();
-        }
+        function render() { ctx.clearRect(0, 0, canvas.width, canvas.height); drawGrid(); drawFood(); drawSnake(); }
 
         function drawSnake() {
             const currentFilter = colorFilters[snakeColorSelect.value];
             snake.forEach((part, i) => {
                 const prev = snake[i-1], next = snake[i+1];
-                let angle = 0, img = imgBody;
+                let angle = 0, img = assets.body;
                 if (i === 0) {
-                    img = imgHead;
-                    if (dx === gridSize) angle = Math.PI/2;
-                    else if (dx === -gridSize) angle = -Math.PI/2;
-                    else if (dy === gridSize) angle = Math.PI;
+                    img = assets.head;
+                    if (dx === gridSize) angle = Math.PI/2; else if (dx === -gridSize) angle = -Math.PI/2; else if (dy === gridSize) angle = Math.PI;
                 } else if (i === snake.length - 1) {
-                    img = imgTail;
+                    img = assets.tail;
                     const relPrev = getRelativePos(part, prev);
-                    if (relPrev.x > 0) angle = Math.PI/2;
-                    else if (relPrev.x < 0) angle = -Math.PI/2;
-                    else if (relPrev.y > 0) angle = Math.PI;
+                    if (relPrev.x > 0) angle = Math.PI/2; else if (relPrev.x < 0) angle = -Math.PI/2; else if (relPrev.y > 0) angle = Math.PI;
                 } else {
                     const p = getRelativePos(part, prev), n = getRelativePos(part, next);
                     if (p.x !== n.x && p.y !== n.y) {
-                        img = imgCorner;
+                        img = assets.corner;
                         if ((p.x === gridSize && n.y === gridSize) || (n.x === gridSize && p.y === gridSize)) angle = -Math.PI/2;
                         else if ((p.y === gridSize && n.x === -gridSize) || (n.y === gridSize && p.x === -gridSize)) angle = 0;
                         else if ((p.x === -gridSize && n.y === -gridSize) || (n.x === -gridSize && p.y === -gridSize)) angle = Math.PI/2;
@@ -422,12 +391,11 @@
                     } else angle = (p.x !== 0) ? Math.PI/2 : 0;
                 }
                 
-                [ {off:2, filt: "brightness(0) opacity(0.3)"}, {off:0, filt: currentFilter} ].forEach(set => {
-                    ctx.save();
-                    ctx.translate(part.x + gridSize/2 + set.off, part.y + gridSize/2 + set.off);
-                    ctx.rotate(angle); ctx.filter = set.filt;
-                    ctx.drawImage(img, -gridSize*overlap/2, -gridSize*overlap/2, gridSize*overlap, gridSize*overlap);
-                    ctx.restore();
+                [ {off:2, filt: "brightness(0) opacity(0.3)"}, {off:0, filt: goldenActive ? "sepia(1) saturate(10) brightness(1.2) hue-rotate(-15deg)" : currentFilter} ].forEach(set => {
+                    ctx.save(); 
+                    if (goldenActive && set.off === 0) { ctx.shadowBlur = 15; ctx.shadowColor = "rgba(255, 215, 0, 0.6)"; }
+                    ctx.translate(part.x + gridSize/2 + set.off, part.y + gridSize/2 + set.off); ctx.rotate(angle); ctx.filter = set.filt;
+                    ctx.drawImage(img, -gridSize*overlap/2, -gridSize*overlap/2, gridSize*overlap, gridSize*overlap); ctx.restore();
                 });
             });
         }
@@ -441,84 +409,72 @@
 
         function move() {
             if (inputQueue.length > 0) { const m = inputQueue.shift(); dx = m.dx; dy = m.dy; }
-            const head = { x: snake[0].x + dx, y: snake[0].y + dy };
-            if (head.x < 0) head.x = canvas.width - gridSize; else if (head.x >= canvas.width) head.x = 0;
-            if (head.y < 0) head.y = canvas.height - gridSize; else if (head.y >= canvas.height) head.y = 0;
-            if (snake.some(p => p.x === head.x && p.y === head.y)) { gameRunning = false; document.getElementById("gameOverUI").style.display = "block"; return; }
+            let head = { x: snake[0].x + dx, y: snake[0].y + dy };
+            const isWrap = wallModeSelect.value === 'wrap';
+            if (isWrap) { if (head.x < 0) head.x = canvas.width - gridSize; else if (head.x >= canvas.width) head.x = 0; if (head.y < 0) head.y = canvas.height - gridSize; else if (head.y >= canvas.height) head.y = 0;
+            } else { if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) { gameOver(); return; } }
+            if (snake.some(p => p.x === head.x && p.y === head.y)) { gameOver(); return; }
             snake.unshift(head);
-            if (head.x === food.x && head.y === food.y) { 
-                score += 10; scoreEl.innerText = score;
-                if(score > highStore) { highStore = score; hiScoreEl.innerText = highStore; localStorage.setItem('snake_hi', highStore); }
-                spawnFood(); 
-            } else snake.pop();
+            if (head.x === food.x && head.y === food.y) { score += 10; scoreEl.innerText = score; spawnFood(); }
+            else if (goldFood && head.x === goldFood.x && head.y === goldFood.y) { score += 50; scoreEl.innerText = score; goldenActive = true; goldenBoostEnd = performance.now() + 5000; goldFood = null; }
+            else snake.pop();
+        }
+
+        function gameOver() { 
+            gameRunning = false; const wall = wallModeSelect.value, diff = diffModeSelect.value;
+            if (score > globalBest) { globalBest = score; localStorage.setItem('snake_hi', globalBest); hiScoreEl.innerText = globalBest; }
+            if (score > detailedScores[wall][diff]) { detailedScores[wall][diff] = score; localStorage.setItem('slink_detailed_scores', JSON.stringify(detailedScores)); }
+            document.getElementById("gameOverStats").innerHTML = `SCORE: ${score}<br>MODE BEST: ${detailedScores[wall][diff]}`;
+            showSubMenu('gameOverUI'); 
         }
 
         function spawnFood() {
             let nx, ny, v = false;
-            while (!v) {
-                nx = Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize;
-                ny = Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize;
-                if (!snake.some(p => p.x === nx && p.y === ny)) v = true;
-            }
+            while (!v) { nx = Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize; ny = Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize; if (!snake.some(p => p.x === nx && p.y === ny)) v = true; }
             food = { x: nx, y: ny };
+            if (Math.random() < 0.05 && !goldFood) {
+                let gnx, gny, gv = false;
+                while (!gv) { gnx = Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize; gny = Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize; if (!snake.some(p => p.x === gnx && p.y === gny) && (gnx !== nx || gny !== ny)) gv = true; }
+                goldFood = { x: gnx, y: gny, expiry: performance.now() + 7000 };
+            }
         }
 
-        function drawFood() {
-            ctx.save();
-            ctx.shadowBlur = 4;
-            ctx.shadowColor = "rgba(0,0,0,0.3)";
-            ctx.shadowOffsetX = 1;
-            ctx.shadowOffsetY = 1;
-            ctx.filter = "sepia(1) hue-rotate(-50deg) saturate(6) brightness(0.5) contrast(1.2)";
-            ctx.drawImage(imgApple, food.x, food.y, gridSize, gridSize);
-            ctx.restore();
+        function drawFood() { 
+            ctx.save(); ctx.shadowBlur = 4; ctx.shadowColor = "rgba(0,0,0,0.3)"; ctx.filter = "sepia(1) hue-rotate(-50deg) saturate(6) brightness(0.5) contrast(1.2)";
+            ctx.drawImage(assets.apple, food.x, food.y, gridSize, gridSize); ctx.restore(); 
+            if (goldFood) {
+                const timeLeft = goldFood.expiry - performance.now();
+                const scale = 0.5 + (Math.sin(performance.now() / 100) * 0.1) + (timeLeft / 7000) * 0.5;
+                ctx.save(); ctx.translate(goldFood.x + gridSize/2, goldFood.y + gridSize/2); ctx.scale(scale, scale);
+                ctx.shadowBlur = 15; ctx.shadowColor = "rgba(255, 215, 0, 0.8)"; ctx.filter = "sepia(1) saturate(20) brightness(1.5) hue-rotate(-15deg)";
+                ctx.drawImage(assets.apple, -gridSize/2, -gridSize/2, gridSize, gridSize); ctx.restore();
+            }
         }
 
         function handleInput(nDx, nDy) {
-            if (!gameRunning || isPaused) return;
+            if (!gameRunning || isPaused || isHelpOpen) return;
             const last = inputQueue.length > 0 ? inputQueue[inputQueue.length - 1] : { dx, dy };
-            if ((nDx !== 0 && nDx === -last.dx) || (nDy !== 0 && nDy === -last.dy) || (nDx === last.dx && nDy === last.dy)) return;
+            if (!firstMoveMade && nDy === gridSize) return;
+            if ((nDx !== 0 && nDx === -last.dx) || (nDy !== 0 && nDy === -last.dy)) return;
             if (inputQueue.length < 2) inputQueue.push({ dx: nDx, dy: nDy });
             if (!firstMoveMade) { firstMoveMade = true; move(); lastTickTime = performance.now(); }
         }
 
         let anchorX, anchorY;
         canvas.addEventListener('touchstart', (e) => { anchorX = e.touches[0].clientX; anchorY = e.touches[0].clientY; }, {passive:false});
-        canvas.addEventListener('touchmove', (e) => {
-            if (!gameRunning || isPaused) return;
-            if (e.cancelable) e.preventDefault();
-            const curX = e.touches[0].clientX, curY = e.touches[0].clientY;
-            const dX = curX - anchorX, dY = curY - anchorY;
-            const threshold = 18; 
-            if (Math.abs(dX) > threshold || Math.abs(dY) > threshold) {
-                if (Math.abs(dX) > Math.abs(dY)) handleInput(dX > 0 ? gridSize : -gridSize, 0);
-                else handleInput(0, dY > 0 ? gridSize : -gridSize);
-                anchorX = curX; anchorY = curY;
-            }
-        }, {passive:false});
+        canvas.addEventListener('touchmove', (e) => { if (!gameRunning || isPaused || isHelpOpen) return; if (e.cancelable) e.preventDefault(); const dX = e.touches[0].clientX - anchorX, dY = e.touches[0].clientY - anchorY; if (Math.abs(dX) > 18 || Math.abs(dY) > 18) { if (Math.abs(dX) > Math.abs(dY)) handleInput(dX > 0 ? gridSize : -gridSize, 0); else handleInput(0, dY > 0 ? gridSize : -gridSize); anchorX = e.touches[0].clientX; anchorY = e.touches[0].clientY; } }, {passive:false});
 
-        const bindBtn = (id, x, y) => { 
-            const btn = document.getElementById(id);
-            if(btn) btn.onpointerdown = (e) => { e.preventDefault(); handleInput(x, y); }; 
-        };
+        window.addEventListener('keydown', (e) => {
+            const k = e.key.toLowerCase(); if (["arrowup", "arrowdown", "arrowleft", "arrowright", " ", "w", "a", "s", "d", "m", "h"].includes(k)) e.preventDefault();
+            if (k === 'r' || k === 'm') resetToMenu(); if (k === ' ') handlePause(); if (k === 'h') openHelp();
+            if (k === 'w' || k === 'arrowup') handleInput(0, -gridSize); else if (k === 's' || k === 'arrowdown') handleInput(0, gridSize); else if (k === 'a' || k === 'arrowleft') handleInput(-gridSize, 0); else if (k === 'd' || k === 'arrowright') handleInput(gridSize, 0);
+        });
+
+        const bindBtn = (id, x, y) => { document.getElementById(id).addEventListener('pointerdown', (e) => { e.preventDefault(); handleInput(x, y); }); };
         bindBtn("ctrlUp", 0, -gridSize); bindBtn("ctrlDown", 0, gridSize);
         bindBtn("ctrlLeft", -gridSize, 0); bindBtn("ctrlRight", gridSize, 0);
 
-        window.addEventListener('keydown', (e) => {
-            const k = e.key.toLowerCase();
-            if (["arrowup", "arrowdown", "arrowleft", "arrowright", " ", "w", "a", "s", "d"].includes(k)) { e.preventDefault(); }
-            
-            if (k === 'r') { init(); return; }
-            if (k === 's') { toggleSettings(); return; }
-            if (k === ' ') { handlePause(); return; }
-
-            if (k === 'w' || k === 'arrowup') handleInput(0, -gridSize);
-            else if (k === 's' || k === 'arrowdown') handleInput(0, gridSize);
-            else if (k === 'a' || k === 'arrowleft') handleInput(-gridSize, 0);
-            else if (k === 'd' || k === 'arrowright') handleInput(gridSize, 0);
-        });
-
-        window.onload = () => { init(); updateStyles(); };
+        window.onload = () => { openHelp(); updateStyles(); initTactileLogic(); };
     </script>
 </body>
 </html>
